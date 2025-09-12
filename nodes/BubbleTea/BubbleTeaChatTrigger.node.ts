@@ -16,34 +16,25 @@ export class BubbleTeaChatTrigger implements INodeType {
 		version: 1,
 		subtitle: 'Receive BubbleTea chat events',
 		description: 'Starts the workflow when BubbleTea sends an event',
-		defaults: {
-			name: 'BubbleTea Webhook',
-		},
+		defaults: { name: 'BubbleTea Webhook' },
 		inputs: [],
-		outputs: [NodeConnectionType.Main],
-
-		// Define webhook entry
+		outputs: [NodeConnectionType.Main],   // if your n8n is picky, use ['main']
 		webhooks: [
 			{
 				name: 'default',
-				httpMethod: '={{$parameter["httpMethod"]}}', // bound to property
-				path: '={{$parameter["path"]}}',             // bound to property
+				httpMethod: '={{$parameter["httpMethod"]}}',
+				path: '={{$parameter["path"]}}',
 				responseMode: 'responseNode',
 				isFullPath: false,
 			},
 		],
-
 		properties: [
 			{
 				displayName: 'HTTP Method',
 				name: 'httpMethod',
 				type: 'options',
-				options: [
-					{ name: 'GET', value: 'GET' },
-					{ name: 'POST', value: 'POST' },
-				],
+				options: [{ name: 'GET', value: 'GET' }, { name: 'POST', value: 'POST' }],
 				default: 'POST',
-				description: 'Select the HTTP method',
 			},
 			{
 				displayName: 'Path',
@@ -51,41 +42,32 @@ export class BubbleTeaChatTrigger implements INodeType {
 				type: 'string',
 				default: 'chat',
 				placeholder: 'e.g. chat',
-				description: 'Webhook path (appended to /webhook/)',
 			},
 			{
 				displayName: 'Respond',
 				name: 'respond',
 				type: 'options',
-				options: [
-					{ name: "Using 'Respond to Webhook' Node", value: 'responseNode' },
-				],
+				options: [{ name: "Using 'Respond to Webhook' Node", value: 'responseNode' }],
 				default: 'responseNode',
-				description: 'How to respond to the request',
 			},
 		],
 	};
 
-	// Webhook implementation
+	// yes, 'any' avoids older n8n typings demanding checkExists/create/delete
 	webhookMethods: any = {
 		default: {
 			async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 				const req = this.getRequestObject();
 				const res = this.getResponseObject();
 
-				// Only allow configured method
 				const method = this.getNodeParameter('httpMethod', 0) as string;
 				if (req.method !== method) {
 					res.status(405).json({ error: `Only ${method} allowed` });
 					return { noWebhookResponse: true };
 				}
 
-				// Pass request body into workflow
-				const returnItem: INodeExecutionData = { json: req.body };
-
-				return {
-					workflowData: [[returnItem]],
-				};
+				const item: INodeExecutionData = { json: req.body };
+				return { workflowData: [[item]] };
 			},
 		},
 	};

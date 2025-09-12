@@ -36,7 +36,7 @@
       "dist/credentials/BubbleTeaApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/BubbleTea/BubbleTea.node.js"
+      "dist/nodes/BubbleTea/BubbleTeaChatTrigger.node.js"
     ]
   },
   "devDependencies": {
