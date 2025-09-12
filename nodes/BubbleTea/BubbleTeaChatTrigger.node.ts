@@ -19,7 +19,7 @@ export class BubbleTeaChatTrigger implements INodeType {
 		description: 'Starts the workflow when BubbleTea sends an event',
 		defaults: { name: 'BubbleTea Webhook' },
 		inputs: [],                   // trigger = no inputs
-		outputs: [NodeConnectionType.Main] as (NodeConnectionType | INodeOutputConfiguration)[],            // keep it boring & compatible
+    outputs: ['main'] as unknown as (NodeConnectionType | INodeOutputConfiguration)[],
 
 		webhooks: [
 			{
