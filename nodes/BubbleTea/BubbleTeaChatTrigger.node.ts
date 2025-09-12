@@ -4,6 +4,8 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	IWebhookResponseData,
+	NodeConnectionType,
+	INodeOutputConfiguration,
 } from 'n8n-workflow';
 
 export class BubbleTeaChatTrigger implements INodeType {
@@ -17,7 +19,7 @@ export class BubbleTeaChatTrigger implements INodeType {
 		description: 'Starts the workflow when BubbleTea sends an event',
 		defaults: { name: 'BubbleTea Webhook' },
 		inputs: [],                   // trigger = no inputs
-		outputs: ['main'],            // keep it boring & compatible
+		outputs: [NodeConnectionType.Main] as (NodeConnectionType | INodeOutputConfiguration)[],            // keep it boring & compatible
 
 		webhooks: [
 			{
