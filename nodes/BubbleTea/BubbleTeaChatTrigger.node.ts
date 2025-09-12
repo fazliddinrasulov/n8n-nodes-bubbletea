@@ -1,11 +1,16 @@
 import {
 	IWebhookFunctions,
-	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
 	IWebhookResponseData,
 	NodeConnectionType,
 	INodeOutputConfiguration,
+	ILoadOptionsFunctions,
+	INodePropertyOptions,
+	LoggerProxy,
+	IHookFunctions,
+	NodeApiError,
+	IDataObject,
 } from 'n8n-workflow';
 
 export class BubbleTeaChatTrigger implements INodeType {
@@ -100,30 +105,59 @@ export class BubbleTeaChatTrigger implements INodeType {
 	};
 
 	// loosen typing here; older n8n typings otherwise demand create/checkExists/delete
-	webhookMethods:any = {
-		default: {
-			async checkExists(this: IWebhookFunctions): Promise<boolean> {
-				return true;
-			},
-			async create(this: IWebhookFunctions): Promise<boolean> {
-				return true;
-			},
-			async delete(this: IWebhookFunctions): Promise<boolean> {
-				return true;
-			},
-			async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-				const req = this.getRequestObject();
-				const method = this.getNodeParameter('httpMethod', 0) as string;
 
-				if (req.method !== method) {
-					this.getResponseObject().status(405).json({ error: `Only ${method} allowed` });
-					return { noWebhookResponse: true };
-				}
+	// Methods to load options dynamically
+	methods = {
+		loadOptions: {
+			async getWebhookEvents(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				LoggerProxy.info('MyCustomNode Webhook: getWebhookEvents method called');
+				return [
 
-				const item: INodeExecutionData = { json: req.body ?? {} };
-				return { workflowData: [[item]] };
+					// Order events
+					{ name: 'Order Created', value: 'order.created' },
+					{ name: 'Order Status Changed', value: 'order.status.changed' },
+
+				];
 			},
-		},
-	};
+		}
+	}
+
+	// This method is called when the node is activated (when the workflow is activated)
+	async activate(this: IHookFunctions): Promise<boolean> {
+		LoggerProxy.info('MyCustomNode Webhook: ACTIVATE method called');
+		// logic to register the webhook on the 3rd party
+
+		return true;
+	} catch (error:any) {
+		LoggerProxy.error('MyCustomNode Webhook: Error in activate method', { error });
+	}
+
+	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
+		LoggerProxy.info('MyCustomNode Webhook: WEBHOOK method called');
+
+		try {
+			const bodyData = this.getBodyData() as IDataObject;
+			const eventType = this.getNodeParameter('event') as string;
+
+			// Optional: Add any data transformation specific to the event type
+			let processedData: IDataObject = bodyData;
+
+			// Example of event-specific processing
+			if (eventType === 'order.created' /*&& bodyData.order*/) {
+				// Extract just the order data
+				//processedData = bodyData.order as IDataObject;
+				processedData = bodyData;
+			}
+
+			return {
+				workflowData: [
+					this.helpers.returnJsonArray(processedData),
+				],
+			};
+		} catch (error) {
+			LoggerProxy.error('MyCustomNode Webhook node: Error in webhook method', { error });
+			throw new NodeApiError(this.getNode(), error);
+		}
+	}
 
 }
