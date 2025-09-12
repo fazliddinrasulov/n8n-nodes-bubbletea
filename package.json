@@ -6,10 +6,10 @@
     "n8n-community-node-package"
   ],
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://n8n.io",
   "author": {
-    "name": "",
-    "email": ""
+    "name": "Fazliddin",
+    "email": "fazliddin0815@gmail.com"
   },
   "repository": {
     "type": "git",
