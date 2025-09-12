@@ -22,20 +22,21 @@ export class BubbleTeaChatTrigger implements INodeType {
 		inputs: [],
 		outputs: [NodeConnectionType.Main],
 
-		// Hardcoded webhook definition
+		// Webhook config (hard-coded)
 		webhooks: [
 			{
 				name: 'default',
 				httpMethod: 'POST',
-				path: 'chat',
-				responseMode: 'responseNode',
+				path: 'chat',              // fixed endpoint
+				responseMode: 'responseNode', // always requires Respond node
 			},
 		],
 
+		// No user-configurable parameters
 		properties: [],
 	};
 
-	// Implementation of the webhook
+	// Webhook implementation
 	// @ts-ignore
 	webhookMethods = {
 		default: {
@@ -43,16 +44,14 @@ export class BubbleTeaChatTrigger implements INodeType {
 				const req = this.getRequestObject();
 				const res = this.getResponseObject();
 
-				// Only POST allowed
+				// Only accept POST
 				if (req.method !== 'POST') {
 					res.status(405).json({ error: 'Only POST allowed' });
 					return { noWebhookResponse: true };
 				}
 
-				// Push request body into workflow
-				const returnItem: INodeExecutionData = {
-					json: req.body,
-				};
+				// Send incoming JSON into workflow
+				const returnItem: INodeExecutionData = { json: req.body };
 
 				return {
 					workflowData: [[returnItem]],
