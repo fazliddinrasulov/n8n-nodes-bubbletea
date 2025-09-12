@@ -57,8 +57,17 @@ export class BubbleTeaChatTrigger implements INodeType {
 	};
 
 	// loosen typing here; older n8n typings otherwise demand create/checkExists/delete
-	webhookMethods: any = {
+	webhookMethods:any = {
 		default: {
+			async checkExists(this: IWebhookFunctions): Promise<boolean> {
+				return true;
+			},
+			async create(this: IWebhookFunctions): Promise<boolean> {
+				return true;
+			},
+			async delete(this: IWebhookFunctions): Promise<boolean> {
+				return true;
+			},
 			async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 				const req = this.getRequestObject();
 				const method = this.getNodeParameter('httpMethod', 0) as string;
@@ -73,4 +82,5 @@ export class BubbleTeaChatTrigger implements INodeType {
 			},
 		},
 	};
+
 }
