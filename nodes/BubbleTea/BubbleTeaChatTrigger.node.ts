@@ -22,33 +22,65 @@ export class BubbleTeaChatTrigger implements INodeType {
 		inputs: [],
 		outputs: [NodeConnectionType.Main],
 
-		// Hard-coded webhook config
+		// Define webhook entry
 		webhooks: [
 			{
 				name: 'default',
-				httpMethod: 'POST',
-				path: 'chat',                  // fixed endpoint
-				responseMode: 'responseNode',  // always requires Respond node
+				httpMethod: '={{$parameter["httpMethod"]}}', // bound to property
+				path: '={{$parameter["path"]}}',             // bound to property
+				responseMode: 'responseNode',
+				isFullPath: false,
 			},
 		],
 
-		properties: [],
+		properties: [
+			{
+				displayName: 'HTTP Method',
+				name: 'httpMethod',
+				type: 'options',
+				options: [
+					{ name: 'GET', value: 'GET' },
+					{ name: 'POST', value: 'POST' },
+				],
+				default: 'POST',
+				description: 'Select the HTTP method',
+			},
+			{
+				displayName: 'Path',
+				name: 'path',
+				type: 'string',
+				default: 'chat',
+				placeholder: 'e.g. chat',
+				description: 'Webhook path (appended to /webhook/)',
+			},
+			{
+				displayName: 'Respond',
+				name: 'respond',
+				type: 'options',
+				options: [
+					{ name: "Using 'Respond to Webhook' Node", value: 'responseNode' },
+				],
+				default: 'responseNode',
+				description: 'How to respond to the request',
+			},
+		],
 	};
 
-	// Properly typed webhook implementation
+	// Webhook implementation
 	webhookMethods: any = {
 		default: {
 			async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 				const req = this.getRequestObject();
 				const res = this.getResponseObject();
 
-				// Enforce POST only
-				if (req.method !== 'POST') {
-					res.status(405).json({ error: 'Only POST allowed' });
+				// Only allow configured method
+				const method = this.getNodeParameter('httpMethod', 0) as string;
+				if (req.method !== method) {
+					res.status(405).json({ error: `Only ${method} allowed` });
 					return { noWebhookResponse: true };
 				}
 
-				// Pass request body into the workflow
+				// Pass request body into workflow
 				const returnItem: INodeExecutionData = { json: req.body };
 
 				return {
