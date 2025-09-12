@@ -36,7 +36,14 @@ export class BubbleTeaChatTrigger implements INodeType {
 				displayName: 'HTTP Method',
 				name: 'httpMethod',
 				type: 'options',
-				options: [{ name: 'GET', value: 'GET' }, { name: 'POST', value: 'POST' }],
+				options: [
+					{ name: 'DELETE', value: 'DELETE' },
+					{ name: 'GET', value: 'GET' },
+					{ name: 'HEAD', value: 'HEAD' },
+					{ name: 'PATCH', value: 'PATCH' },
+					{ name: 'POST', value: 'POST' },
+					{ name: 'PUT', value: 'PUT' },
+				],
 				default: 'POST',
 			},
 			{
@@ -50,9 +57,45 @@ export class BubbleTeaChatTrigger implements INodeType {
 				displayName: 'Respond',
 				name: 'respond',
 				type: 'options',
-				options: [{ name: "Using 'Respond to Webhook' Node", value: 'responseNode' }],
-				default: 'responseNode',
+				options: [
+					{
+						name: 'Immediately',
+						value: 'onReceived',
+						description: 'As soon as this node executes',
+					},
+					{
+						name: 'When Last Node Finishes',
+						value: 'lastNode',
+						description: 'Return data of the last executed node',
+					},
+					{
+						name: "Using 'Respond to Webhook' Node",
+						value: 'responseNode',
+						description: 'Response defined in a Respond to Webhook node',
+					},
+					{
+						name: 'Streaming',
+						value: 'streaming',
+						description: 'Return data in real time from streaming-enabled nodes',
+					},
+				],
+				default: 'onReceived',
+				description: 'When to send the response to the webhook caller',
 			},
+			{
+				displayName: 'Authentication',
+				name: 'authentication',
+				type: 'options',
+				options: [
+					{ name: 'None', value: 'none' },
+					{ name: 'Basic Auth', value: 'basicAuth' },
+					{ name: 'Header Auth', value: 'headerAuth' },
+					{ name: 'JWT Auth', value: 'jwtAuth' },
+				],
+				default: 'none',
+				description: 'How to authenticate incoming requests',
+			},
+
 		],
 	};
 
