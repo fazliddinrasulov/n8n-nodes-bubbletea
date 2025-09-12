@@ -3,22 +3,23 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
-	NodeConnectionType,
 	IWebhookResponseData,
+	NodeConnectionType,
 } from 'n8n-workflow';
 
 export class BubbleTeaChatTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'BubbleTea Chat Trigger',
-		name: 'bubbleTeaTrigger',
+		name: 'bubbleTeaChatTrigger',
 		icon: 'file:bubbletea-chat.svg',
 		group: ['trigger'],
 		version: 1,
 		subtitle: 'Receive BubbleTea chat events',
 		description: 'Starts the workflow when BubbleTea sends an event',
 		defaults: { name: 'BubbleTea Webhook' },
-		inputs: [],
-		outputs: [NodeConnectionType.Main],   // if your n8n is picky, use ['main']
+		inputs: [],                   // trigger = no inputs
+		outputs: [NodeConnectionType.Main],            // keep it boring & compatible
+
 		webhooks: [
 			{
 				name: 'default',
@@ -28,6 +29,7 @@ export class BubbleTeaChatTrigger implements INodeType {
 				isFullPath: false,
 			},
 		],
+
 		properties: [
 			{
 				displayName: 'HTTP Method',
@@ -53,20 +55,19 @@ export class BubbleTeaChatTrigger implements INodeType {
 		],
 	};
 
-	// yes, 'any' avoids older n8n typings demanding checkExists/create/delete
+	// loosen typing here; older n8n typings otherwise demand create/checkExists/delete
 	webhookMethods: any = {
 		default: {
 			async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 				const req = this.getRequestObject();
-				const res = this.getResponseObject();
-
 				const method = this.getNodeParameter('httpMethod', 0) as string;
+
 				if (req.method !== method) {
-					res.status(405).json({ error: `Only ${method} allowed` });
+					this.getResponseObject().status(405).json({ error: `Only ${method} allowed` });
 					return { noWebhookResponse: true };
 				}
 
-				const item: INodeExecutionData = { json: req.body };
+				const item: INodeExecutionData = { json: req.body ?? {} };
 				return { workflowData: [[item]] };
 			},
 		},
