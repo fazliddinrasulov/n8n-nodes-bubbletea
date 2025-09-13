@@ -157,7 +157,7 @@ export class BubbleTeaChatTrigger implements INodeType {
 				query,
 				body,
 				webhookUrl: this.getNodeWebhookUrl('default'),
-				executionMode: this.getMode(), // "manual" or "production"
+				executionMode: "production", // "manual" or "production"
 			};
 
 			return {
