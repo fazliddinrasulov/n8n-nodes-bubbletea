@@ -145,21 +145,24 @@ export class BubbleTeaChatTrigger implements INodeType {
 		LoggerProxy.info('MyCustomNode Webhook: WEBHOOK method called');
 
 		try {
-			const bodyData = this.getBodyData() as IDataObject;
-			const eventType = this.getNodeParameter('event') as string;
+			const req = this.getRequestObject();
+			const body = this.getBodyData() as IDataObject;
+			const headers = req.headers as IDataObject;
+			const query = this.getQueryData() as IDataObject;
+			const params = this.getParamsData() as IDataObject;
 
-			// Optional: Add any data transformation specific to the event type
-			let processedData: IDataObject = bodyData;
-
-			// Example of event-specific processing
-			if (eventType === 'order.created' /*&& bodyData.order*/) {
-				// Extract just the order data
-				//processedData = bodyData.order as IDataObject;
-				processedData = bodyData;
-			}
+			// Construct the response object
+			const response: IDataObject = {
+				headers,
+				params,
+				query,
+				body,
+				webhookUrl: this.getNodeWebhookUrl('default'),
+				executionMode: this.getMode(), // "manual" or "production"
+			};
 
 			return {
-				workflowData: [this.helpers.returnJsonArray(processedData)],
+				workflowData: [this.helpers.returnJsonArray(response)],
 			};
 		} catch (error) {
 			LoggerProxy.error('MyCustomNode Webhook node: Error in webhook method', { error });
