@@ -143,7 +143,6 @@ export class BubbleTeaChatTrigger implements INodeType {
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		LoggerProxy.info('MyCustomNode Webhook: WEBHOOK method called');
-
 		try {
 			const req = this.getRequestObject();
 			const body = this.getBodyData() as IDataObject;
@@ -163,6 +162,7 @@ export class BubbleTeaChatTrigger implements INodeType {
 
 			return {
 				workflowData: [this.helpers.returnJsonArray(response)],
+				noWebhookResponse: true,
 			};
 		} catch (error) {
 			LoggerProxy.error('MyCustomNode Webhook node: Error in webhook method', { error });
