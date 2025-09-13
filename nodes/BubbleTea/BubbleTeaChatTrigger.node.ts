@@ -23,8 +23,8 @@ export class BubbleTeaChatTrigger implements INodeType {
 		subtitle: 'Receive BubbleTea chat events',
 		description: 'Starts the workflow when BubbleTea sends an event',
 		defaults: { name: 'BubbleTea Webhook' },
-		inputs: [],                   // trigger = no inputs
-    outputs: ['main'] as unknown as (NodeConnectionType | INodeOutputConfiguration)[],
+		inputs: [], // trigger = no inputs
+		outputs: ['main'] as unknown as (NodeConnectionType | INodeOutputConfiguration)[],
 
 		webhooks: [
 			{
@@ -84,8 +84,8 @@ export class BubbleTeaChatTrigger implements INodeType {
 						description: 'Return data in real time from streaming-enabled nodes',
 					},
 				],
-				default: 'onReceived',
-				description: 'When to send the response to the webhook caller',
+				default: 'responseNode',
+				description: 'Response defined in a Respond to Webhook node',
 			},
 			{
 				displayName: 'Authentication',
@@ -100,7 +100,17 @@ export class BubbleTeaChatTrigger implements INodeType {
 				default: 'none',
 				description: 'How to authenticate incoming requests',
 			},
-
+			{
+				displayName: 'Event',
+				name: 'event',
+				type: 'options',
+				options: [
+					{ name: 'Order Created', value: 'order.created' },
+					{ name: 'Order Status Changed', value: 'order.status.changed' },
+				],
+				default: 'order.created',
+				description: 'The BubbleTea event to listen for',
+			},
 		],
 	};
 
@@ -112,15 +122,13 @@ export class BubbleTeaChatTrigger implements INodeType {
 			async getWebhookEvents(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				LoggerProxy.info('MyCustomNode Webhook: getWebhookEvents method called');
 				return [
-
 					// Order events
 					{ name: 'Order Created', value: 'order.created' },
 					{ name: 'Order Status Changed', value: 'order.status.changed' },
-
 				];
 			},
-		}
-	}
+		},
+	};
 
 	// This method is called when the node is activated (when the workflow is activated)
 	async activate(this: IHookFunctions): Promise<boolean> {
@@ -128,7 +136,8 @@ export class BubbleTeaChatTrigger implements INodeType {
 		// logic to register the webhook on the 3rd party
 
 		return true;
-	} catch (error:any) {
+	}
+	catch(error: any) {
 		LoggerProxy.error('MyCustomNode Webhook: Error in activate method', { error });
 	}
 
@@ -150,14 +159,11 @@ export class BubbleTeaChatTrigger implements INodeType {
 			}
 
 			return {
-				workflowData: [
-					this.helpers.returnJsonArray(processedData),
-				],
+				workflowData: [this.helpers.returnJsonArray(processedData)],
 			};
 		} catch (error) {
 			LoggerProxy.error('MyCustomNode Webhook node: Error in webhook method', { error });
 			throw new NodeApiError(this.getNode(), error);
 		}
 	}
-
 }
