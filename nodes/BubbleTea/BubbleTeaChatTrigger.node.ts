@@ -2,15 +2,12 @@ import {
 	IWebhookFunctions,
 	INodeType,
 	INodeTypeDescription,
-	IWebhookResponseData,
 	NodeConnectionType,
 	INodeOutputConfiguration,
 	ILoadOptionsFunctions,
 	INodePropertyOptions,
 	LoggerProxy,
 	IHookFunctions,
-	NodeApiError,
-	IDataObject,
 } from 'n8n-workflow';
 
 export class BubbleTeaChatTrigger implements INodeType {
