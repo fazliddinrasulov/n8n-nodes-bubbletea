@@ -5,8 +5,6 @@ import {
 	IWebhookResponseData,
 	NodeConnectionType,
 	INodeOutputConfiguration,
-	ILoadOptionsFunctions,
-	INodePropertyOptions,
 	LoggerProxy,
 	IHookFunctions,
 	IDataObject,
@@ -62,72 +60,69 @@ export class BubbleTeaChatTrigger implements INodeType {
 				name: 'respond',
 				type: 'options',
 				options: [
-					{
-						name: 'Immediately',
-						value: 'onReceived',
-						description: 'As soon as this node executes',
-					},
+					// {
+					// 	name: 'Immediately',
+					// 	value: 'onReceived',
+					// 	description: 'As soon as this node executes',
+					// },
 					{
 						name: 'When Last Node Finishes',
 						value: 'lastNode',
 						description: 'Return data of the last executed node',
 					},
-					{
-						name: "Using 'Respond to Webhook' Node",
-						value: 'responseNode',
-						description: 'Response defined in a Respond to Webhook node',
-					},
-					{
-						name: 'Streaming',
-						value: 'streaming',
-						description: 'Return data in real time from streaming-enabled nodes',
-					},
+					// {
+					// 	name: "Using 'Respond to Webhook' Node",
+					// 	value: 'responseNode',
+					// 	description: 'Response defined in a Respond to Webhook node',
+					// },
+					// {
+					// 	name: 'Streaming',
+					// 	value: 'streaming',
+					// 	description: 'Return data in real time from streaming-enabled nodes',
+					// },
 				],
-				default: 'responseNode',
+				default: 'lastNode',
 				description: 'Response defined in a Respond to Webhook node',
 			},
-			{
-				displayName: 'Authentication',
-				name: 'authentication',
-				type: 'options',
-				options: [
-					{ name: 'None', value: 'none' },
-					{ name: 'Basic Auth', value: 'basicAuth' },
-					{ name: 'Header Auth', value: 'headerAuth' },
-					{ name: 'JWT Auth', value: 'jwtAuth' },
-				],
-				default: 'none',
-				description: 'How to authenticate incoming requests',
-			},
-			{
-				displayName: 'Event',
-				name: 'event',
-				type: 'options',
-				options: [
-					{ name: 'Order Created', value: 'order.created' },
-					{ name: 'Order Status Changed', value: 'order.status.changed' },
-				],
-				default: 'order.created',
-				description: 'The BubbleTea event to listen for',
-			},
+			// {
+			// 	displayName: 'Authentication',
+			// 	name: 'authentication',
+			// 	type: 'options',
+			// 	options: [
+			// 		{ name: 'None', value: 'none' },
+			// 		{ name: 'Basic Auth', value: 'basicAuth' },
+			// 		{ name: 'Header Auth', value: 'headerAuth' },
+			// 		{ name: 'JWT Auth', value: 'jwtAuth' },
+			// 	],
+			// 	default: 'none',
+			// 	description: 'How to authenticate incoming requests',
+			// },
+			// {
+			// 	displayName: 'Event',
+			// 	name: 'event',
+			// 	type: 'options',
+			// 	options: [
+			// 		{ name: 'Order Created', value: 'order.created' },
+			// 		{ name: 'Order Status Changed', value: 'order.status.changed' },
+			// 	],
+			// 	default: 'order.created',
+			// 	description: 'The BubbleTea event to listen for',
+			// },
 		],
 	};
 
-	// loosen typing here; older n8n typings otherwise demand create/checkExists/delete
-
-	// Methods to load options dynamically
-	methods = {
-		loadOptions: {
-			async getWebhookEvents(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				LoggerProxy.info('MyCustomNode Webhook: getWebhookEvents method called');
-				return [
-					// Order events
-					{ name: 'Order Created', value: 'order.created' },
-					{ name: 'Order Status Changed', value: 'order.status.changed' },
-				];
-			},
-		},
-	};
+	// methods = {
+	// 	loadOptions: {
+	// 		async getWebhookEvents(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+	// 			LoggerProxy.info('MyCustomNode Webhook: getWebhookEvents method called');
+	// 			return [
+	// 				// Order events
+	// 				{ name: 'Order Created', value: 'order.created' },
+	// 				{ name: 'Order Status Changed', value: 'order.status.changed' },
+	// 			];
+	// 		},
+	// 	},
+	// };
 
 	// This method is called when the node is activated (when the workflow is activated)
 	async activate(this: IHookFunctions): Promise<boolean> {
@@ -160,15 +155,15 @@ export class BubbleTeaChatTrigger implements INodeType {
 			executionMode: this.getMode(), // "manual" or "production"
 		};
 
-		if (respond === 'onReceived') {
-			// return immediately with 200 + small payload
-			return {
-				webhookResponse: {
-					status: 200,
-					body: { ok: true },
-				},
-			};
-		}
+		// if (respond === 'onReceived') {
+		// 	// return immediately with 200 + small payload
+		// 	return {
+		// 		webhookResponse: {
+		// 			status: 200,
+		// 			body: { ok: true },
+		// 		},
+		// 	};
+		// }
 
 		if (respond === 'lastNode') {
 			// let workflow run and last node output will be sent back
@@ -177,21 +172,21 @@ export class BubbleTeaChatTrigger implements INodeType {
 			};
 		}
 
-		if (respond === 'responseNode') {
-			// workflow runs, but actual response will come from Respond to Webhook node
-			return {
-				workflowData: [this.helpers.returnJsonArray(response)],
-				noWebhookResponse: true,
-			};
-		}
+		// if (respond === 'responseNode') {
+		// 	// workflow runs, but actual response will come from Respond to Webhook node
+		// 	return {
+		// 		workflowData: [this.helpers.returnJsonArray(response)],
+		// 		noWebhookResponse: true,
+		// 	};
+		// }
 
-		if (respond === 'streaming') {
-			// streaming mode isn’t trivial; usually handled in core
-			return {
-				workflowData: [this.helpers.returnJsonArray(response)],
-				noWebhookResponse: true,
-			};
-		}
+		// if (respond === 'streaming') {
+		// 	// streaming mode isn’t trivial; usually handled in core
+		// 	return {
+		// 		workflowData: [this.helpers.returnJsonArray(response)],
+		// 		noWebhookResponse: true,
+		// 	};
+		// }
 
 		// fallback
 		return {
