@@ -31,7 +31,7 @@ export class BubbleTeaChatTrigger implements INodeType {
 				name: 'default',
 				httpMethod: '={{$parameter["httpMethod"]}}',
 				path: '={{$parameter["path"]}}',
-				responseMode: 'responseNode',   // <- required
+				responseMode: '={{$parameter["respond"]}}',
 				isFullPath: false,
 			},
 		],
