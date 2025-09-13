@@ -1,14 +1,16 @@
-import {
+import type {
 	IWebhookFunctions,
 	INodeType,
 	INodeTypeDescription,
+	IWebhookResponseData,
 	NodeConnectionType,
 	INodeOutputConfiguration,
 	ILoadOptionsFunctions,
 	INodePropertyOptions,
-	LoggerProxy,
 	IHookFunctions,
+	IDataObject,
 } from 'n8n-workflow';
+import { LoggerProxy } from 'n8n-workflow';
 
 export class BubbleTeaChatTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -139,10 +141,11 @@ export class BubbleTeaChatTrigger implements INodeType {
 		}
 	}
 
-	webhookMethods = {
+
+	webhookMethods: any = {
 		default: {
-			async webhook(this: IWebhookFunctions) {
-				const response = {
+			async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
+				const response: IDataObject = {
 					headers: this.getHeaderData(),
 					params: this.getParamsData(),
 					query: this.getQueryData(),
@@ -152,12 +155,12 @@ export class BubbleTeaChatTrigger implements INodeType {
 				};
 				return {
 					workflowData: [this.helpers.returnJsonArray(response)],
-					noWebhookResponse: true,   // let Respond to Webhook send the reply
+					noWebhookResponse: true, // Respond to Webhook will reply
 				};
 			},
-			async checkExists() { return false; },
-			async create() { return true; },
-			async delete() { return true; },
+			async checkExists(this: IWebhookFunctions) { return false; },
+			async create(this: IWebhookFunctions) { return true; },
+			async delete(this: IWebhookFunctions) { return true; },
 		},
 	};
 }
