@@ -142,31 +142,25 @@ export class BubbleTeaChatTrigger implements INodeType {
 		}
 	}
 
-	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-		LoggerProxy.info('MyCustomNode Webhook: WEBHOOK method called');
-		try {
-			const body = this.getBodyData() as IDataObject;
-			const headers = this.getHeaderData() as IDataObject;
-			const query = this.getQueryData() as IDataObject;
-			const params = this.getParamsData() as IDataObject;
-
-			// Construct the response object
-			const response: IDataObject = {
-				headers,
-				params,
-				query,
-				body,
-				webhookUrl: this.getNodeWebhookUrl('default'),
-				executionMode: this.getMode(), // "manual" or "production"
-			};
-
-			return {
-				workflowData: [this.helpers.returnJsonArray(response)],
-				noWebhookResponse: true,
-			};
-		} catch (error) {
-			LoggerProxy.error('MyCustomNode Webhook node: Error in webhook method', { error });
-			throw new NodeApiError(this.getNode(), error);
-		}
-	}
+	webhookMethods = {
+		default: {
+			async webhook(this: IWebhookFunctions) {
+				const response = {
+					headers: this.getHeaderData(),
+					params: this.getParamsData(),
+					query: this.getQueryData(),
+					body: this.getBodyData(),
+					webhookUrl: this.getNodeWebhookUrl('default'),
+					executionMode: this.getMode(),
+				};
+				return {
+					workflowData: [this.helpers.returnJsonArray(response)],
+					noWebhookResponse: true,   // let Respond to Webhook send the reply
+				};
+			},
+			async checkExists() { return false; },
+			async create() { return true; },
+			async delete() { return true; },
+		},
+	};
 }
