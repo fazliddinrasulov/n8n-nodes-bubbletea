@@ -144,29 +144,60 @@ export class BubbleTeaChatTrigger implements INodeType {
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		LoggerProxy.info('MyCustomNode Webhook: WEBHOOK method called');
-		try {
-			const body = this.getBodyData() as IDataObject;
-			const headers = this.getHeaderData() as IDataObject;
-			const query = this.getQueryData() as IDataObject;
-			const params = this.getParamsData() as IDataObject;
 
-			// Construct the response object
-			const response: IDataObject = {
-				headers,
-				params,
-				query,
-				body,
-				webhookUrl: this.getNodeWebhookUrl('default'),
-				executionMode: "production", // "manual" or "production"
+		const respond = this.getNodeParameter('respond', 0) as string;
+
+		const body = this.getBodyData() as IDataObject;
+		const headers = this.getHeaderData() as IDataObject;
+		const query = this.getQueryData() as IDataObject;
+		const params = this.getParamsData() as IDataObject;
+
+		const response: IDataObject = {
+			headers,
+			params,
+			query,
+			body,
+			webhookUrl: this.getNodeWebhookUrl('default'),
+			executionMode: this.getMode(), // "manual" or "production"
+		};
+
+		if (respond === 'onReceived') {
+			// return immediately with 200 + small payload
+			return {
+				webhookResponse: {
+					status: 200,
+					body: { ok: true },
+				},
 			};
+		}
 
+		if (respond === 'lastNode') {
+			// let workflow run and last node output will be sent back
+			return {
+				workflowData: [this.helpers.returnJsonArray(response)],
+			};
+		}
+
+		if (respond === 'responseNode') {
+			// workflow runs, but actual response will come from Respond to Webhook node
 			return {
 				workflowData: [this.helpers.returnJsonArray(response)],
 				noWebhookResponse: true,
 			};
-		} catch (error) {
-			LoggerProxy.error('MyCustomNode Webhook node: Error in webhook method', { error });
-			throw new NodeApiError(this.getNode(), error);
 		}
+
+		if (respond === 'streaming') {
+			// streaming mode isn’t trivial; usually handled in core
+			return {
+				workflowData: [this.helpers.returnJsonArray(response)],
+				noWebhookResponse: true,
+			};
+		}
+
+		// fallback
+		return {
+			workflowData: [this.helpers.returnJsonArray(response)],
+		};
 	}
+
 }
