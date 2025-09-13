@@ -1,4 +1,4 @@
-import type {
+import {
 	IWebhookFunctions,
 	INodeType,
 	INodeTypeDescription,
@@ -7,10 +7,11 @@ import type {
 	INodeOutputConfiguration,
 	ILoadOptionsFunctions,
 	INodePropertyOptions,
+	LoggerProxy,
 	IHookFunctions,
+	NodeApiError,
 	IDataObject,
 } from 'n8n-workflow';
-import { LoggerProxy } from 'n8n-workflow';
 
 export class BubbleTeaChatTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -141,26 +142,31 @@ export class BubbleTeaChatTrigger implements INodeType {
 		}
 	}
 
+	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
+		LoggerProxy.info('MyCustomNode Webhook: WEBHOOK method called');
+		try {
+			const body = this.getBodyData() as IDataObject;
+			const headers = this.getHeaderData() as IDataObject;
+			const query = this.getQueryData() as IDataObject;
+			const params = this.getParamsData() as IDataObject;
 
-	webhookMethods: any = {
-		default: {
-			async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
-				const response: IDataObject = {
-					headers: this.getHeaderData(),
-					params: this.getParamsData(),
-					query: this.getQueryData(),
-					body: this.getBodyData(),
-					webhookUrl: this.getNodeWebhookUrl('default'),
-					executionMode: this.getMode(),
-				};
-				return {
-					workflowData: [this.helpers.returnJsonArray(response)],
-					noWebhookResponse: true, // Respond to Webhook will reply
-				};
-			},
-			async checkExists(this: IWebhookFunctions) { return false; },
-			async create(this: IWebhookFunctions) { return true; },
-			async delete(this: IWebhookFunctions) { return true; },
-		},
-	};
+			// Construct the response object
+			const response: IDataObject = {
+				headers,
+				params,
+				query,
+				body,
+				webhookUrl: this.getNodeWebhookUrl('default'),
+				executionMode: this.getMode(), // "manual" or "production"
+			};
+
+			return {
+				workflowData: [this.helpers.returnJsonArray(response)],
+				noWebhookResponse: true,
+			};
+		} catch (error) {
+			LoggerProxy.error('MyCustomNode Webhook node: Error in webhook method', { error });
+			throw new NodeApiError(this.getNode(), error);
+		}
+	}
 }
