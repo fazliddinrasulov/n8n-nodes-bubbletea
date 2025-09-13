@@ -31,7 +31,7 @@ export class BubbleTeaChatTrigger implements INodeType {
 				name: 'default',
 				httpMethod: '={{$parameter["httpMethod"]}}',
 				path: '={{$parameter["path"]}}',
-				responseMode: 'responseNode',
+				responseMode: 'responseNode',   // <- required
 				isFullPath: false,
 			},
 		],
@@ -132,21 +132,21 @@ export class BubbleTeaChatTrigger implements INodeType {
 
 	// This method is called when the node is activated (when the workflow is activated)
 	async activate(this: IHookFunctions): Promise<boolean> {
-		LoggerProxy.info('MyCustomNode Webhook: ACTIVATE method called');
-		// logic to register the webhook on the 3rd party
-
-		return true;
-	}
-	catch(error: any) {
-		LoggerProxy.error('MyCustomNode Webhook: Error in activate method', { error });
+		try {
+			LoggerProxy.info('MyCustomNode Webhook: ACTIVATE method called');
+			// TODO: register webhook with BubbleTea API if needed
+			return true;
+		} catch (error: any) {
+			LoggerProxy.error('MyCustomNode Webhook: Error in activate method', { error });
+			throw error;
+		}
 	}
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 		LoggerProxy.info('MyCustomNode Webhook: WEBHOOK method called');
 		try {
-			const req = this.getRequestObject();
 			const body = this.getBodyData() as IDataObject;
-			const headers = req.headers as IDataObject;
+			const headers = this.getHeaderData() as IDataObject;
 			const query = this.getQueryData() as IDataObject;
 			const params = this.getParamsData() as IDataObject;
 
