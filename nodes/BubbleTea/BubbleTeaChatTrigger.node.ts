@@ -9,7 +9,6 @@ import {
 	INodePropertyOptions,
 	LoggerProxy,
 	IHookFunctions,
-	NodeApiError,
 	IDataObject,
 } from 'n8n-workflow';
 
