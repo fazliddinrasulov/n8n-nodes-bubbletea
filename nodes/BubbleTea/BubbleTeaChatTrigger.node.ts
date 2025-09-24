@@ -102,7 +102,7 @@ export class BubbleTeaChatTrigger implements INodeType {
 				displayName: 'Header Name',
 				name: 'headerName',
 				type: 'string',
-				default: 'x-api-key',
+				default: 'X-API-Key',
 				displayOptions: { show: { authentication: ['headerAuth'] } },
 			},
 			{
