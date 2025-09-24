@@ -39,12 +39,12 @@ export class BubbleTeaChatTrigger implements INodeType {
 				name: 'httpMethod',
 				type: 'options',
 				options: [
-					{ name: 'DELETE', value: 'DELETE' },
+					// { name: 'DELETE', value: 'DELETE' },
 					{ name: 'GET', value: 'GET' },
-					{ name: 'HEAD', value: 'HEAD' },
-					{ name: 'PATCH', value: 'PATCH' },
+					// { name: 'HEAD', value: 'HEAD' },
+					// { name: 'PATCH', value: 'PATCH' },
 					{ name: 'POST', value: 'POST' },
-					{ name: 'PUT', value: 'PUT' },
+					// { name: 'PUT', value: 'PUT' },
 				],
 				default: 'POST',
 			},
@@ -84,45 +84,48 @@ export class BubbleTeaChatTrigger implements INodeType {
 				default: 'lastNode',
 				description: 'Response defined in a Respond to Webhook node',
 			},
-			// {
-			// 	displayName: 'Authentication',
-			// 	name: 'authentication',
-			// 	type: 'options',
-			// 	options: [
-			// 		{ name: 'None', value: 'none' },
+			{
+				displayName: 'Authentication',
+				name: 'authentication',
+				type: 'options',
+				options: [
+					{ name: 'None', value: 'none' },
 			// 		{ name: 'Basic Auth', value: 'basicAuth' },
-			// 		{ name: 'Header Auth', value: 'headerAuth' },
+					{ name: 'Header Auth', value: 'headerAuth' },
 			// 		{ name: 'JWT Auth', value: 'jwtAuth' },
-			// 	],
-			// 	default: 'none',
-			// 	description: 'How to authenticate incoming requests',
-			// },
-			// {
-			// 	displayName: 'Event',
-			// 	name: 'event',
-			// 	type: 'options',
-			// 	options: [
-			// 		{ name: 'Order Created', value: 'order.created' },
-			// 		{ name: 'Order Status Changed', value: 'order.status.changed' },
-			// 	],
-			// 	default: 'order.created',
-			// 	description: 'The BubbleTea event to listen for',
-			// },
+				],
+				default: 'none',
+				description: 'How to authenticate incoming requests',
+			},
+			{
+				displayName: 'Header Name',
+				name: 'headerName',
+				type: 'string',
+				default: 'x-api-key',
+				displayOptions: { show: { authentication: ['headerAuth'] } },
+			},
+			{
+				displayName: 'Expected Value',
+				name: 'headerValue',
+				type: 'string',
+				typeOptions: { password: true },
+				default: '',
+				displayOptions: { show: { authentication: ['headerAuth'] } },
+			},
+			{
+				displayName: 'Event',
+				name: 'event',
+				type: 'options',
+				options: [
+					{ name: 'Order Created', value: 'order.created' },
+					{ name: 'Order Status Changed', value: 'order.status.changed' },
+				],
+				default: 'order.created',
+				description: 'The BubbleTea event to listen for',
+			},
 		],
 	};
 
-	// methods = {
-	// 	loadOptions: {
-	// 		async getWebhookEvents(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-	// 			LoggerProxy.info('MyCustomNode Webhook: getWebhookEvents method called');
-	// 			return [
-	// 				// Order events
-	// 				{ name: 'Order Created', value: 'order.created' },
-	// 				{ name: 'Order Status Changed', value: 'order.status.changed' },
-	// 			];
-	// 		},
-	// 	},
-	// };
 
 	// This method is called when the node is activated (when the workflow is activated)
 	async activate(this: IHookFunctions): Promise<boolean> {
@@ -140,11 +143,31 @@ export class BubbleTeaChatTrigger implements INodeType {
 		LoggerProxy.info('MyCustomNode Webhook: WEBHOOK method called');
 
 		const respond = this.getNodeParameter('respond', 0) as string;
+		const authMode = this.getNodeParameter('authentication', 0) as string;
 
 		const body = this.getBodyData() as IDataObject;
 		const headers = this.getHeaderData() as IDataObject;
 		const query = this.getQueryData() as IDataObject;
 		const params = this.getParamsData() as IDataObject;
+
+		if (authMode === 'headerAuth') {
+			const headerName = (this.getNodeParameter('headerName', 0) as string).toLowerCase();
+			const expected = this.getNodeParameter('headerValue', 0) as string;
+
+			const incoming =
+				(headers[headerName] as string) ??
+				(headers[headerName.replace(/-/g, '_')] as string) ??
+				undefined;
+
+			if (!expected || incoming !== expected) {
+				return {
+					webhookResponse: {
+						status: 401,
+						body: { error: 'unauthorized' },
+					},
+				};
+			}
+		}
 
 		const response: IDataObject = {
 			headers,
@@ -152,18 +175,8 @@ export class BubbleTeaChatTrigger implements INodeType {
 			query,
 			body,
 			webhookUrl: this.getNodeWebhookUrl('default'),
-			executionMode: this.getMode(), // "manual" or "production"
+			executionMode: this.getMode(),
 		};
-
-		// if (respond === 'onReceived') {
-		// 	// return immediately with 200 + small payload
-		// 	return {
-		// 		webhookResponse: {
-		// 			status: 200,
-		// 			body: { ok: true },
-		// 		},
-		// 	};
-		// }
 
 		if (respond === 'lastNode') {
 			// let workflow run and last node output will be sent back
@@ -171,22 +184,6 @@ export class BubbleTeaChatTrigger implements INodeType {
 				workflowData: [this.helpers.returnJsonArray(response)],
 			};
 		}
-
-		// if (respond === 'responseNode') {
-		// 	// workflow runs, but actual response will come from Respond to Webhook node
-		// 	return {
-		// 		workflowData: [this.helpers.returnJsonArray(response)],
-		// 		noWebhookResponse: true,
-		// 	};
-		// }
-
-		// if (respond === 'streaming') {
-		// 	// streaming mode isn’t trivial; usually handled in core
-		// 	return {
-		// 		workflowData: [this.helpers.returnJsonArray(response)],
-		// 		noWebhookResponse: true,
-		// 	};
-		// }
 
 		// fallback
 		return {
