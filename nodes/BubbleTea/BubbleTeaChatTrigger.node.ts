@@ -29,7 +29,7 @@ export class BubbleTeaChatTrigger implements INodeType {
 				httpMethod: '={{$parameter["httpMethod"]}}',
 				path: '={{$parameter["path"]}}',
 				responseMode: '={{$parameter["respond"]}}',   // <- required
-				isFullPath: false,
+				isFullPath: true,
 			},
 		],
 
@@ -55,6 +55,7 @@ export class BubbleTeaChatTrigger implements INodeType {
 				default: 'chat',
 				placeholder: 'e.g. chat',
 			},
+
 			{
 				displayName: 'Respond',
 				name: 'respond',
@@ -190,5 +191,4 @@ export class BubbleTeaChatTrigger implements INodeType {
 			workflowData: [this.helpers.returnJsonArray(response)],
 		};
 	}
-
 }
