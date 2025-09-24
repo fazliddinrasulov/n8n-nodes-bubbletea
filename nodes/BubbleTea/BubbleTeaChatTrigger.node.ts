@@ -113,17 +113,6 @@ export class BubbleTeaChatTrigger implements INodeType {
 				default: '',
 				displayOptions: { show: { authentication: ['headerAuth'] } },
 			},
-			{
-				displayName: 'Event',
-				name: 'event',
-				type: 'options',
-				options: [
-					{ name: 'Order Created', value: 'order.created' },
-					{ name: 'Order Status Changed', value: 'order.status.changed' },
-				],
-				default: 'order.created',
-				description: 'The BubbleTea event to listen for',
-			},
 		],
 	};
 
