@@ -92,27 +92,27 @@ export class BubbleTeaChatTrigger implements INodeType {
 				options: [
 					{ name: 'None', value: 'none' },
 			// 		{ name: 'Basic Auth', value: 'basicAuth' },
-					{ name: 'Header Auth', value: 'headerAuth' },
+			// 		{ name: 'Header Auth', value: 'headerAuth' },
 			// 		{ name: 'JWT Auth', value: 'jwtAuth' },
 				],
 				default: 'none',
 				description: 'How to authenticate incoming requests',
 			},
-			{
-				displayName: 'Header Name',
-				name: 'headerName',
-				type: 'string',
-				default: 'X-API-Key',
-				displayOptions: { show: { authentication: ['headerAuth'] } },
-			},
-			{
-				displayName: 'Expected Value',
-				name: 'headerValue',
-				type: 'string',
-				typeOptions: { password: true },
-				default: '',
-				displayOptions: { show: { authentication: ['headerAuth'] } },
-			},
+			// {
+			// 	displayName: 'Header Name',
+			// 	name: 'headerName',
+			// 	type: 'string',
+			// 	default: 'X-API-Key',
+			// 	displayOptions: { show: { authentication: ['headerAuth'] } },
+			// },
+			// {
+			// 	displayName: 'Expected Value',
+			// 	name: 'headerValue',
+			// 	type: 'string',
+			// 	typeOptions: { password: true },
+			// 	default: '',
+			// 	displayOptions: { show: { authentication: ['headerAuth'] } },
+			// },
 		],
 	};
 
@@ -133,31 +133,31 @@ export class BubbleTeaChatTrigger implements INodeType {
 		LoggerProxy.info('MyCustomNode Webhook: WEBHOOK method called');
 
 		const respond = this.getNodeParameter('respond', 0) as string;
-		const authMode = this.getNodeParameter('authentication', 0) as string;
+		// const authMode = this.getNodeParameter('authentication', 0) as string;
 
 		const body = this.getBodyData() as IDataObject;
 		const headers = this.getHeaderData() as IDataObject;
 		const query = this.getQueryData() as IDataObject;
 		const params = this.getParamsData() as IDataObject;
 
-		if (authMode === 'headerAuth') {
-			const headerName = (this.getNodeParameter('headerName', 0) as string).toLowerCase();
-			const expected = this.getNodeParameter('headerValue', 0) as string;
-
-			const incoming =
-				(headers[headerName] as string) ??
-				(headers[headerName.replace(/-/g, '_')] as string) ??
-				undefined;
-
-			if (!expected || incoming !== expected) {
-				return {
-					webhookResponse: {
-						status: 401,
-						body: { error: 'unauthorized' },
-					},
-				};
-			}
-		}
+		// if (authMode === 'headerAuth') {
+		// 	const headerName = (this.getNodeParameter('headerName', 0) as string).toLowerCase();
+		// 	const expected = this.getNodeParameter('headerValue', 0) as string;
+		//
+		// 	const incoming =
+		// 		(headers[headerName] as string) ??
+		// 		(headers[headerName.replace(/-/g, '_')] as string) ??
+		// 		undefined;
+		//
+		// 	if (!expected || incoming !== expected) {
+		// 		return {
+		// 			webhookResponse: {
+		// 				status: 401,
+		// 				body: { error: 'unauthorized' },
+		// 			},
+		// 		};
+		// 	}
+		// }
 
 		const response: IDataObject = {
 			headers,
